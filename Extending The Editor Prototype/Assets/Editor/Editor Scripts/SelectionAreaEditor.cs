@@ -3,15 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-public enum SelectionType
-{
-    Plateau
 
-}
-public enum PlateauType
-{
-    Circular
-}
 
 [CustomEditor(typeof(SelectionArea))]
 [CanEditMultipleObjects]
@@ -19,28 +11,32 @@ public class SelectionAreaEditor : Editor
 {
     SelectionArea areaTarget;
 
+    
     private SelectionType selectionType;
     private PlateauType plateauType;
-    private float radius = 1;
+    private float radius;
 
 
     private void OnEnable()
     {
         areaTarget = (SelectionArea)target;
-        
+        radius = areaTarget.radius;
     }
 
     public override void OnInspectorGUI()
     {
+        DrawDefaultInspector();
         // creates an array of points used to draw a circle
         areaTarget.circleArray = CreateCircleArray(areaTarget.transform);
 
         // creates and renders the selection type enum in the inspector and sets the type to what was selected
         selectionType = (SelectionType)EditorGUILayout.EnumPopup("Selection Type", selectionType);
+        areaTarget.selectionType = selectionType;
         if (selectionType == SelectionType.Plateau)
         {
             // creates and renders the plateau type enum in the inspector and sets the type to what was selected
             plateauType = (PlateauType)EditorGUILayout.EnumPopup("Plateau Type", plateauType);
+            areaTarget.plateauType = plateauType;
             if (plateauType == PlateauType.Circular)
             {
                 // creates and renders the radius slider in the inspector and sets it to what was selected
@@ -48,9 +44,10 @@ public class SelectionAreaEditor : Editor
                 areaTarget.radius = radius;
             }
         }
-        // checks if any GUI elements have changed and repaints the scene
+        // checks if any GUI elements have changed
         if (EditorGUI.EndChangeCheck())
         {
+            // repaints the scene
             SceneView.RepaintAll();
         }
     }
@@ -87,7 +84,21 @@ public class SelectionAreaEditor : Editor
         return circleList.ToArray();
     }
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     [DrawGizmo(GizmoType.NonSelected | GizmoType.Selected | GizmoType.Pickable)]
     static void DrawGizmos(SelectionArea selectionArea, GizmoType gizmoType)
