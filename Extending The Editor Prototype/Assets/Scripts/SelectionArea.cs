@@ -8,5 +8,4 @@ public class SelectionArea : MonoBehaviour
 {
     public float radius = 1;
     public Vector3[] circleArray;
-    
 }

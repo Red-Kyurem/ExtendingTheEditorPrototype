@@ -19,7 +19,6 @@ public class SelectionAreaEditor : Editor
 {
     SelectionArea areaTarget;
 
-    
     private SelectionType selectionType;
     private PlateauType plateauType;
     private float radius = 1;
@@ -28,6 +27,7 @@ public class SelectionAreaEditor : Editor
     private void OnEnable()
     {
         areaTarget = (SelectionArea)target;
+        
     }
 
     public override void OnInspectorGUI()
@@ -46,7 +46,12 @@ public class SelectionAreaEditor : Editor
                 // creates and renders the radius slider in the inspector and sets it to what was selected
                 radius = EditorGUILayout.Slider("Radius", radius, 0.1f, 20);
                 areaTarget.radius = radius;
-            }   
+            }
+        }
+        // checks if any GUI elements have changed and repaints the scene
+        if (EditorGUI.EndChangeCheck())
+        {
+            SceneView.RepaintAll();
         }
     }
 
@@ -81,6 +86,8 @@ public class SelectionAreaEditor : Editor
 
         return circleList.ToArray();
     }
+
+    
 
     [DrawGizmo(GizmoType.NonSelected | GizmoType.Selected | GizmoType.Pickable)]
     static void DrawGizmos(SelectionArea selectionArea, GizmoType gizmoType)
