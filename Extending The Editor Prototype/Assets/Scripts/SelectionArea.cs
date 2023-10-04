@@ -4,12 +4,13 @@ using UnityEngine;
 
 public enum SelectionType
 {
-    Plateau
-
+    Plateau,
+    RampTEST
 }
 public enum PlateauType
 {
-    Circular
+    Circular,
+    Rectangular
 }
 
 public class SelectionArea : MonoBehaviour
@@ -26,7 +27,13 @@ public class SelectionArea : MonoBehaviour
     [HideInInspector]
     public float radius = 1;
     [HideInInspector]
-    public Vector3[] circleArray;
+    public float width = 1;
+    [HideInInspector]
+    public float height = 1;
+    [HideInInspector]
+    public float depth = 1;
+    [HideInInspector]
+    public Vector3[] listArray;
 
 
 
