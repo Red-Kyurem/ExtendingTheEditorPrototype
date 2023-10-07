@@ -245,6 +245,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   terrain: {fileID: 545232544}
+  layers:
+    serializedVersion: 2
+    m_Bits: 0
   selectionType: 0
   plateauType: 1
   radius: 6.21
@@ -252,14 +255,14 @@ MonoBehaviour:
   height: 0
   depth: 10
   listArray:
-  - {x: 51.7, y: 27.7, z: 59.6}
-  - {x: 31.7, y: 27.7, z: 59.6}
-  - {x: 31.7, y: 27.7, z: 59.6}
-  - {x: 31.7, y: 27.7, z: 39.6}
-  - {x: 31.7, y: 27.7, z: 39.6}
-  - {x: 51.699997, y: 27.7, z: 39.6}
-  - {x: 51.699997, y: 27.7, z: 39.6}
-  - {x: 51.7, y: 27.7, z: 59.6}
+  - {x: 71.2, y: 27.7, z: 84.1}
+  - {x: 51.2, y: 27.7, z: 84.1}
+  - {x: 51.2, y: 27.7, z: 84.1}
+  - {x: 51.2, y: 27.7, z: 64.1}
+  - {x: 51.2, y: 27.7, z: 64.1}
+  - {x: 71.2, y: 27.7, z: 64.1}
+  - {x: 71.2, y: 27.7, z: 64.1}
+  - {x: 71.2, y: 27.7, z: 84.1}
 --- !u!4 &760453439
 Transform:
   m_ObjectHideFlags: 0
@@ -269,7 +272,7 @@ Transform:
   m_GameObject: {fileID: 760453437}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 41.7, y: 27.7, z: 49.6}
+  m_LocalPosition: {x: 61.2, y: 27.7, z: 74.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -305,6 +308,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   terrain: {fileID: 545232544}
+  layers:
+    serializedVersion: 2
+    m_Bits: 0
   selectionType: 0
   plateauType: 0
   radius: 10

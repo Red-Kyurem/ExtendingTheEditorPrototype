@@ -48,7 +48,7 @@ public class SelectionAreaEditor : Editor
                 radius = EditorGUILayout.Slider("Radius", radius, 0.1f, 20);
 
                 // creates an array of points used to draw a circle
-                areaTarget.listArray = CreateCircleArray(areaTarget.transform);
+                areaTarget.lineListArray = CreateCircleArray(areaTarget.transform);
             }
             if (plateauType == PlateauType.Rectangular)
             {
@@ -61,7 +61,7 @@ public class SelectionAreaEditor : Editor
                 depth = EditorGUILayout.Slider("Depth", depth, 0.1f, 20);
 
                 // creates an array of points used to draw a rectangle
-                areaTarget.listArray = CreateRectArray(areaTarget.transform);
+                areaTarget.lineListArray = CreateRectArray(areaTarget.transform);
             }
         }
         // checks if any GUI elements have changed
@@ -158,7 +158,7 @@ public class SelectionAreaEditor : Editor
     static void DrawGizmos(SelectionArea selectionArea, GizmoType gizmoType)
     {
         // draws a line from the circle array
-        Gizmos.DrawLineList(selectionArea.listArray);
+        Gizmos.DrawLineList(selectionArea.lineListArray);
         
     }
 
