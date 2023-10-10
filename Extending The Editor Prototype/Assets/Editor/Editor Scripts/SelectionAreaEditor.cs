@@ -48,7 +48,8 @@ public class SelectionAreaEditor : Editor
                 radius = EditorGUILayout.Slider("Radius", radius, 0.1f, 20);
 
                 // creates an array of points used to draw a circle
-                areaTarget.lineListArray = CreateCircleArray(areaTarget.transform);
+                areaTarget.gizmoArray = CreateCircleArray(areaTarget.transform);
+                
             }
             if (plateauType == PlateauType.Rectangular)
             {
@@ -61,7 +62,8 @@ public class SelectionAreaEditor : Editor
                 depth = EditorGUILayout.Slider("Depth", depth, 0.1f, 20);
 
                 // creates an array of points used to draw a rectangle
-                areaTarget.lineListArray = CreateRectArray(areaTarget.transform);
+                areaTarget.verticeArray = CreateVerticeArray(areaTarget.transform, 4, width, depth);
+                areaTarget.gizmoArray = CreateRectArray(areaTarget.verticeArray);
             }
         }
         // checks if any GUI elements have changed
@@ -115,7 +117,7 @@ public class SelectionAreaEditor : Editor
         return circleList.ToArray();
     }
 
-    public Vector3[] CreateRectArray(Transform objectTransform)
+    public Vector3[] CreateRectArray(Vector3[] verticeArray)
     {
         List<Vector3> rectList = new List<Vector3>();
 
@@ -126,18 +128,32 @@ public class SelectionAreaEditor : Editor
             // Gizmos.DrawLineList requires a pair of points to render a line segment properly
             for (int pairPartner = 0; pairPartner < 2; pairPartner++)
             {
-                Vector3 newPoint = objectTransform.position;
-                // sets the offset in the local right and local forward directions of the point
-                // offsets are equal when rotated
-
-                newPoint += objectTransform.right * Mathf.Cos(Mathf.Deg2Rad * (360 / 4 * (pointNum + pairPartner) + 45)) * width * Mathf.Sqrt(2);
-                newPoint += objectTransform.forward * Mathf.Sin(Mathf.Deg2Rad * (360 / 4 * (pointNum + pairPartner) + 45)) * depth * Mathf.Sqrt(2);
-
-                // adds point to list
-                rectList.Add(newPoint);
+                // adds point in vertice array to list
+                // pairPartner is the next vertice in the array
+                // uses modulo to loop back to the start of the array, preventing an array overflow
+                rectList.Add(verticeArray[(pointNum + pairPartner) % verticeArray.Length]);
             }
         }
         return rectList.ToArray();
+    }
+
+    public Vector3[] CreateVerticeArray(Transform objectTransform, int detail, float width, float depth)
+    {
+        List<Vector3> vertList = new List<Vector3>();
+
+        // create points and add to rectList
+        for (int pointNum = 0; pointNum < detail; pointNum++)
+        {
+            Vector3 newPoint = objectTransform.position;
+            // sets the offset in the local right and local forward directions of the point
+            // offsets are equal when rotated
+            newPoint += objectTransform.right * Mathf.Cos(Mathf.Deg2Rad * (360 / detail * pointNum + 45)) * width * Mathf.Sqrt(2);
+            newPoint += objectTransform.forward * Mathf.Sin(Mathf.Deg2Rad * (360 / detail * pointNum + 45)) * depth * Mathf.Sqrt(2);
+
+            // adds point to list
+            vertList.Add(newPoint);
+        }
+        return vertList.ToArray();
     }
 
 
@@ -154,11 +170,13 @@ public class SelectionAreaEditor : Editor
 
 
 
-        [DrawGizmo(GizmoType.NonSelected | GizmoType.Selected | GizmoType.Pickable)]
+    [DrawGizmo(GizmoType.NonSelected | GizmoType.Selected | GizmoType.Pickable)]
     static void DrawGizmos(SelectionArea selectionArea, GizmoType gizmoType)
     {
+        Gizmos.color = Color.blue;
+
         // draws a line from the circle array
-        Gizmos.DrawLineList(selectionArea.lineListArray);
+        Gizmos.DrawLineList(selectionArea.gizmoArray);
         
     }
 
