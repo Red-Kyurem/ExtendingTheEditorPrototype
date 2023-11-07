@@ -2,10 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum SelectionType
+public enum BrushType
 {
     Plateau,
-    RampTEST
+    Ramp
 }
 public enum PlateauType
 {
@@ -19,7 +19,7 @@ public class SelectionArea : MonoBehaviour
     public Terrain terrain;
 
     [HideInInspector]
-    public SelectionType selectionType;
+    public BrushType brushType;
     [HideInInspector]
     public PlateauType plateauType;
 
@@ -121,13 +121,8 @@ public class SelectionArea : MonoBehaviour
     bool VerticeInAffectedArea(int terrainX, int terrainY, Vector3 affectedPoint, int terrainRes, float width, float depth)
     {
 
-        
-
-
         float scaledWidth = width * ((float)terrainRes / 100);
         float scaledDepth = depth * ((float)terrainRes / 100);
-
-        
 
         // if the vertice is within the brush's affected area
         if (terrainX <= (affectedPoint.z + scaledWidth)
@@ -139,25 +134,6 @@ public class SelectionArea : MonoBehaviour
         }
         return false;
 
-        // commented out for now since this doesnt work properly and breaks what was already here
-        //Vector3 F = transform.forward;
-        //Vector3 R = transform.right;
-        //F.y = 0;
-        //R.y = 0;
-        //F = F.normalized;
-        //R = R.normalized;
-        //Vector3 vector = ((F * scaledWidth) + (R * scaledDepth));
-        //// uses y=mx+b formula to shave the edges of brush
-        //if (terrainX <= (affectedPoint.z + vector.x) + ((verticeArray[0].z - verticeArray[1].z) / (verticeArray[0].x - verticeArray[1].x) * (terrainY - WorldPointToTerrainPoint(verticeArray[0]).x) + ((verticeArray[1].x - verticeArray[0].x) / 2))
-        // && terrainX >= (affectedPoint.z - vector.x) + ((verticeArray[2].z - verticeArray[3].z) / (verticeArray[2].x - verticeArray[3].x) * (terrainY - WorldPointToTerrainPoint(verticeArray[2]).x) + ((verticeArray[3].x - verticeArray[2].x) / 2))
-        // && terrainY <= (affectedPoint.x + vector.z) + ((verticeArray[0].x - verticeArray[3].x) / (verticeArray[0].z - verticeArray[3].z) * (terrainX - WorldPointToTerrainPoint(verticeArray[0]).y))
-        // && terrainY >= (affectedPoint.x - vector.z) + ((verticeArray[1].x - verticeArray[2].x) / (verticeArray[1].z - verticeArray[2].z) * (terrainX - WorldPointToTerrainPoint(verticeArray[1]).y) + ((verticeArray[2].z - verticeArray[1].z)/2))
-        //)
-        //{
-        //    Debug.Log(transform.rotation.y);
-        //    return true;
-        //}
-        //return false;
     }
 
 }

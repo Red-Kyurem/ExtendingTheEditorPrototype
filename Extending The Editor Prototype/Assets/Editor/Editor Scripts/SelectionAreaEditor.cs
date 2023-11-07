@@ -12,9 +12,10 @@ public class SelectionAreaEditor : Editor
     SelectionArea areaTarget;
 
     
-    private SelectionType selectionType;
-    private PlateauType plateauType;
-    int detail = 32;
+    private BrushType brushType;        // an enum of the different types of brushes that can be selected. all the brush types can be edited in the SelectionArea script
+    private PlateauType plateauType;    // an enum of the different types of plateau brushes. can be edited in the SelectionArea script
+
+    int detail = 32;    // how many points are used for creating a circle array
     private float radius;
     private float width;
     private float height;
@@ -32,9 +33,9 @@ public class SelectionAreaEditor : Editor
 
 
         // creates and renders the selection type enum in the inspector and sets the type to what was selected
-        selectionType = areaTarget.selectionType;
-        selectionType = (SelectionType)EditorGUILayout.EnumPopup("Selection Type", selectionType);
-        if (selectionType == SelectionType.Plateau)
+        brushType = areaTarget.brushType;
+        brushType = (BrushType)EditorGUILayout.EnumPopup("Selection Type", brushType);
+        if (brushType == BrushType.Plateau)
         {
 
             // creates and renders the plateau type enum in the inspector and sets the type to what was selected
@@ -45,10 +46,9 @@ public class SelectionAreaEditor : Editor
             {
                 // creates and renders the radius slider in the inspector and sets it to what was selected
                 radius = areaTarget.radius;
-                radius = EditorGUILayout.Slider("Radius", radius, 0.1f, 20);
-
-                // creates an array of points used to draw a circle
-                areaTarget.gizmoArray = CreateCircleArray(areaTarget.transform);
+                radius = EditorGUILayout.Slider("Radius", radius, 0.1f, 10);
+                
+                areaTarget.gizmoArray = CreateCircleArray();
                 
             }
             if (plateauType == PlateauType.Rectangular)
@@ -61,9 +61,7 @@ public class SelectionAreaEditor : Editor
                 depth = areaTarget.depth;
                 depth = EditorGUILayout.Slider("Depth", depth, 0.1f, 20);
 
-                // creates an array of points used to draw a rectangle
-                areaTarget.verticeArray = CreateVerticeArray(areaTarget.transform, 4, width, depth);
-                areaTarget.gizmoArray = CreateRectArray(areaTarget.verticeArray);
+                areaTarget.gizmoArray = CreateRectArray();
             }
         }
         // checks if any GUI elements have changed
@@ -79,7 +77,7 @@ public class SelectionAreaEditor : Editor
     public void UpdateVariables()
     {
         // sets all changes made in the inspector to the script
-        areaTarget.selectionType = selectionType;
+        areaTarget.brushType = brushType;
         areaTarget.plateauType = plateauType;
         areaTarget.radius = radius;
         areaTarget.width = width;
@@ -87,71 +85,56 @@ public class SelectionAreaEditor : Editor
         areaTarget.depth = depth;
     }
 
-    public Vector3[] CreateCircleArray(Transform objectTransform)
+    public Vector3[] CreateCircleArray()
     {
-    
+        // creates an array of vertices used to draw a circle
+        areaTarget.verticeArray = CreateVerticeArray(areaTarget.transform, 32, radius * 2, radius * 2, 0);
+
         List<Vector3> circleList = new List<Vector3>();
+        circleList.AddRange(areaTarget.verticeArray);
 
-        // create points and add to circleList
-        // detail is how many points will be present in the list
-        for (int pointNum = 0; pointNum < detail; pointNum++)
-        {
-            // Gizmos.DrawLineList requires a pair of points to render a line segment properly
-            for (int pairPartner = 0; pairPartner < 2; pairPartner++)
-            {
-                Vector3 newPoint = objectTransform.position;
-                // sets the offset in the local right and local forward directions of the point
-                // offsets keep an equal radius when rotated
-                // Cos and Sin make the point placement circular
-                newPoint += objectTransform.right * Mathf.Cos(Mathf.Deg2Rad * (360 / detail * (pointNum + pairPartner))) * radius;
-                newPoint += objectTransform.forward * Mathf.Sin(Mathf.Deg2Rad * (360 / detail * (pointNum + pairPartner))) * radius;
-
-                // adds point to list
-                circleList.Add(newPoint);
-            }
-        }
-        //adds the last point and the first point as a pair to close the circle
+        //adds the last vertice and the first vertice as a pair to close the circle
         circleList.Add(circleList[circleList.Count - 1]);
         circleList.Add(circleList[0]);
 
         return circleList.ToArray();
     }
 
-    public Vector3[] CreateRectArray(Vector3[] verticeArray)
+    public Vector3[] CreateRectArray()
     {
+        // creates an array of vertices used to draw a rectangle
+        // CreateVerticeArray() will treat width and depth as a radius and create a circle, causing it to shrink in size and be rotated 45 degrees in the wrong direction
+        // to fix the issue, multiply width and depth by the square root of 2 to increase the range to the appropriate level and set degreeRotation to 45
+        areaTarget.verticeArray = CreateVerticeArray(areaTarget.transform, 4, depth * Mathf.Sqrt(2), width * Mathf.Sqrt(2), 45);
+
         List<Vector3> rectList = new List<Vector3>();
+        rectList.AddRange(areaTarget.verticeArray);
 
-        // create points and add to rectList
-        for (int pointNum = 0; pointNum < 4; pointNum++)
-        {
+        //adds the last vertice and the first vertice as a pair to close the rectangle
+        rectList.Add(rectList[rectList.Count - 1]);
+        rectList.Add(rectList[0]);
 
-            // Gizmos.DrawLineList requires a pair of points to render a line segment properly
-            for (int pairPartner = 0; pairPartner < 2; pairPartner++)
-            {
-                // adds point in vertice array to list
-                // pairPartner is the next vertice in the array
-                // uses modulo to loop back to the start of the array, preventing an array overflow
-                rectList.Add(verticeArray[(pointNum + pairPartner) % verticeArray.Length]);
-            }
-        }
         return rectList.ToArray();
     }
 
-    public Vector3[] CreateVerticeArray(Transform objectTransform, int detail, float width, float depth)
+    public Vector3[] CreateVerticeArray(Transform objectTransform, int detail, float depth, float width, float degreeRotation)
     {
         List<Vector3> vertList = new List<Vector3>();
 
-        // create points and add to rectList
-        for (int pointNum = 0; pointNum < detail; pointNum++)
+        // create vertices and add to rectList
+        for (int vertNum = 0; vertNum < detail; vertNum++)
         {
-            Vector3 newPoint = objectTransform.position;
-            // sets the offset in the local right and local forward directions of the point
-            // offsets are equal when rotated
-            newPoint += objectTransform.right * Mathf.Cos(Mathf.Deg2Rad * (360 / detail * pointNum + 45)) * width * Mathf.Sqrt(2);
-            newPoint += objectTransform.forward * Mathf.Sin(Mathf.Deg2Rad * (360 / detail * pointNum + 45)) * depth * Mathf.Sqrt(2);
+            for (int pairPartner = 0; pairPartner < 2; pairPartner++)
+            {
+                Vector3 newVert = objectTransform.position;
 
-            // adds point to list
-            vertList.Add(newPoint);
+                // sets the offset in the local right and local forward directions of the vertice
+                newVert += objectTransform.right * Mathf.Cos(Mathf.Deg2Rad * (360 / detail * (vertNum + pairPartner) + degreeRotation)) * depth;
+                newVert += objectTransform.forward * Mathf.Sin(Mathf.Deg2Rad * (360 / detail * (vertNum + pairPartner) + degreeRotation)) * width;
+
+                // adds vertice to list
+                vertList.Add(newVert);
+            }
         }
         return vertList.ToArray();
     }
