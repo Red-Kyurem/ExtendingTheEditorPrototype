@@ -76,7 +76,6 @@ public class SelectionArea : MonoBehaviour
     }
 
 
-
     public void ChangeTerrainHeight()
     {
         int terrainResolution = terrain.terrainData.heightmapResolution;
@@ -89,20 +88,32 @@ public class SelectionArea : MonoBehaviour
         {
             for (int y = 0; y < terrainResolution; y++)
             {
-                if (plateauType == PlateauType.Circular)
+                if (brushType == BrushType.Plateau)
                 {
-                    // checks if the vertice is within the affected area
-                    if (VerticeInAffectedArea(x, y, affectedPoint, terrainResolution, radius, radius))
+                    if (plateauType == PlateauType.Circular)
                     {
-                        // if the vertice's distance is within the radius 
-                        if (Vector2.Distance(new Vector2(x, y), new Vector2(affectedPoint.z, affectedPoint.x)) <= (radius * ((float)terrainResolution / 100)))
+                        // checks if the vertice is within the affected area
+                        if (VerticeInAffectedArea(x, y, affectedPoint, terrainResolution, radius, radius))
+                        {
+                            // if the vertice's distance is within the radius 
+                            if (Vector2.Distance(new Vector2(x, y), new Vector2(affectedPoint.z, affectedPoint.x)) <= (radius * ((float)terrainResolution / 100)))
+                            {
+                                // sets the new height of the vertice
+                                newHeights[x, y] = affectedPoint.y;
+                            }
+                        }
+                    }
+                    else if (plateauType == PlateauType.Rectangular)
+                    {
+                        // checks if the vertice is within the affected area
+                        if (VerticeInAffectedArea(x, y, affectedPoint, terrainResolution, width, depth))
                         {
                             // sets the new height of the vertice
                             newHeights[x, y] = affectedPoint.y;
                         }
                     }
                 }
-                else if (plateauType == PlateauType.Rectangular)
+                if (brushType == BrushType.Ramp)
                 {
                     // checks if the vertice is within the affected area
                     if (VerticeInAffectedArea(x, y, affectedPoint, terrainResolution, width, depth))
