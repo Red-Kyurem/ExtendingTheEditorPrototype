@@ -12,8 +12,9 @@ public class SelectionAreaEditor : Editor
     SelectionArea areaTarget;
 
     
-    private BrushType brushType;        // an enum of the different types of brushes that can be selected. all the brush types can be edited in the SelectionArea script
-    private PlateauType plateauType;    // an enum of the different types of plateau brushes. can be edited in the SelectionArea script
+    private BrushType brushType;                // an enum of the different types of brushes that can be selected. all the brush types can be edited in the SelectionArea script
+    private PlateauType plateauType;            // an enum of the different types of plateau brushes. can be edited in the SelectionArea script
+    private RampDirectionType rampDirection;    // an enum of the cardinal directions for the ramp brush. can be edited in the SelectionArea script
 
     int detail = 32;    // how many points are used for creating a circle array
     private float radius;
@@ -61,11 +62,15 @@ public class SelectionAreaEditor : Editor
                 depth = areaTarget.depth;
                 depth = EditorGUILayout.Slider("Depth", depth, 0.1f, 20);
 
-                areaTarget.gizmoArray = CreateRectArray();
+                areaTarget.gizmoArray = CreateRectArray(width, depth);
             }
         }
         else if (brushType == BrushType.Ramp)
         {
+            // creates and renders the ramp direction type enum in the inspector and sets the type to what was selected
+            rampDirection = areaTarget.rampDirection;
+            rampDirection = (RampDirectionType)EditorGUILayout.EnumPopup("Ramp Direction", rampDirection);
+
             // creates and renders the width slider in the inspector and sets it to what was selected
             width = areaTarget.width;
             width = EditorGUILayout.Slider("Width", width, 0.1f, 20);
@@ -78,7 +83,7 @@ public class SelectionAreaEditor : Editor
             height = areaTarget.height;
             height = EditorGUILayout.Slider("Height", height, 0.1f, 20);
 
-            areaTarget.gizmoArray = CreateRampArray();
+            areaTarget.gizmoArray = CreateRampArray(width, depth, (int)rampDirection);
         }
         // checks if any GUI elements have changed
         if (EditorGUI.EndChangeCheck())
@@ -96,6 +101,7 @@ public class SelectionAreaEditor : Editor
         // sets all changes made in the inspector to the script
         areaTarget.brushType = brushType;
         areaTarget.plateauType = plateauType;
+        areaTarget.rampDirection = rampDirection;
         areaTarget.radius = radius;
         areaTarget.width = width;
         areaTarget.height = height;
@@ -120,7 +126,7 @@ public class SelectionAreaEditor : Editor
         return circleList.ToArray();
     }
 
-    public Vector3[] CreateRectArray()
+    public Vector3[] CreateRectArray(float width, float depth)
     {
         // creates an array of vertices used to draw a rectangle
         // CreateVerticeArray() will treat width and depth as a radius and create a circle, causing it to shrink in size and be rotated 45 degrees in the wrong direction
@@ -138,12 +144,20 @@ public class SelectionAreaEditor : Editor
         return rectList.ToArray();
     }
 
-    public Vector3[] CreateRampArray(int startingCorner = 0)
+    public Vector3[] CreateRampArray(float width, float depth, int startingCorner = 0)
     {
+
+        if (startingCorner % 2 == 1)
+        {
+            float storeWidth = width;
+            width = depth;
+            depth = storeWidth;
+        }
+
         List<Vector3> rampList = new List<Vector3>();
 
         // creates the base rectangle of the ramp
-        rampList.AddRange(CreateRectArray());
+        rampList.AddRange(CreateRectArray(width, depth));
 
         // creates the rest of the ramp
         for (int vertNum = 0; vertNum < 2; vertNum++)

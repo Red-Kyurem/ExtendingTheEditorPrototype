@@ -12,6 +12,13 @@ public enum PlateauType
     Circular,
     Rectangular
 }
+public enum RampDirectionType
+{
+    North,
+    West,
+    South,
+    East
+}
 
 public class SelectionArea : MonoBehaviour
 {
@@ -22,6 +29,8 @@ public class SelectionArea : MonoBehaviour
     public BrushType brushType;
     [HideInInspector]
     public PlateauType plateauType;
+    [HideInInspector]
+    public RampDirectionType rampDirection;
 
     [HideInInspector]
     public float radius = 1;
@@ -115,11 +124,24 @@ public class SelectionArea : MonoBehaviour
                 }
                 if (brushType == BrushType.Ramp)
                 {
-                    // checks if the vertice is within the affected area
-                    if (VerticeInAffectedArea(x, y, affectedPoint, terrainResolution, width, depth))
+                    if (rampDirection == RampDirectionType.North)
                     {
-                        // sets the new height of the vertice
-                        newHeights[x, y] = affectedPoint.y;
+                        // checks if the vertice is within the affected area
+                        if (VerticeInAffectedArea(x, y, affectedPoint, terrainResolution, width, depth))
+                        {
+                            // sets the new height of the vertice
+                            newHeights[x, y] = affectedPoint.y + (WorldPointToTerrainPoint(Vector3.up*height).y*(x/(affectedPoint.z + (width * ((float)terrainResolution / 100)))));
+                            Debug.Log((x / (affectedPoint.z + (width * ((float)terrainResolution / 100)))));
+                        }
+                    }
+                    else if (rampDirection == RampDirectionType.South)
+                    {
+                        // checks if the vertice is within the affected area
+                        if (VerticeInAffectedArea(x, y, affectedPoint, terrainResolution, width, depth))
+                        {
+                            // sets the new height of the vertice
+                            newHeights[x, y] = affectedPoint.y;
+                        }
                     }
                 }
             }
