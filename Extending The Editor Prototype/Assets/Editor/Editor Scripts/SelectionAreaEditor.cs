@@ -31,6 +31,8 @@ public class SelectionAreaEditor : Editor
     {
         DrawDefaultInspector();
 
+        // remembers any GUI element changes for checking if any variables were changed
+        EditorGUI.BeginChangeCheck();
 
         // creates and renders the selection type enum in the inspector and sets the type to what was selected
         brushType = areaTarget.brushType;
@@ -64,7 +66,7 @@ public class SelectionAreaEditor : Editor
                 areaTarget.gizmoArray = CreateRectArray();
             }
         }
-        // checks if any GUI elements have changed
+        // checks if any GUI elements have changed since EditorGUI.BeginChangeCheck()
         if (EditorGUI.EndChangeCheck())
         {
             // updates all changes made in the inspector
