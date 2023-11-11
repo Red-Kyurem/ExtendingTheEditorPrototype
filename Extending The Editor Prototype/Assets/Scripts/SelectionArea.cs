@@ -85,12 +85,17 @@ public class SelectionArea : MonoBehaviour
     }
 
 
+
     public void ChangeTerrainHeight()
     {
         int terrainResolution = terrain.terrainData.heightmapResolution;
         float[,] newHeights = terrain.terrainData.GetHeights(0, 0, terrainResolution, terrainResolution);
 
         Vector3 affectedPoint = WorldPointToTerrainPoint(transform.position);
+
+        float scaledWidth = width * ((float)terrainResolution / 100);
+        float scaledDepth = depth * ((float)terrainResolution / 100);
+        float scaledRadius = radius * ((float)terrainResolution / 100);
 
         // change the height data of each vertice
         for (int x = 0; x < terrainResolution; x++)
@@ -102,7 +107,7 @@ public class SelectionArea : MonoBehaviour
                     if (plateauType == PlateauType.Circular)
                     {
                         // checks if the vertice is within the affected area
-                        if (VerticeInAffectedArea(x, y, affectedPoint, terrainResolution, radius, radius))
+                        if (VerticeInAffectedArea(x, y, affectedPoint, scaledRadius, scaledRadius))
                         {
                             // if the vertice's distance is within the radius 
                             if (Vector2.Distance(new Vector2(x, y), new Vector2(affectedPoint.z, affectedPoint.x)) <= (radius * ((float)terrainResolution / 100)))
@@ -115,7 +120,7 @@ public class SelectionArea : MonoBehaviour
                     else if (plateauType == PlateauType.Rectangular)
                     {
                         // checks if the vertice is within the affected area
-                        if (VerticeInAffectedArea(x, y, affectedPoint, terrainResolution, width, depth))
+                        if (VerticeInAffectedArea(x, y, affectedPoint, scaledWidth, scaledDepth))
                         {
                             // sets the new height of the vertice
                             newHeights[x, y] = affectedPoint.y;
@@ -127,17 +132,26 @@ public class SelectionArea : MonoBehaviour
                     if (rampDirection == RampDirectionType.North)
                     {
                         // checks if the vertice is within the affected area
-                        if (VerticeInAffectedArea(x, y, affectedPoint, terrainResolution, width, depth))
+                        if (VerticeInAffectedArea(x, y, affectedPoint, scaledWidth, scaledDepth))
                         {
+                            // the height to be added to set the new height of the vertice
+                            // must convert to terrain values since height on a terrain map is between 0 and 1
+                            float addedHeight = WorldPointToTerrainPoint(Vector3.up * height).y;
+                            // how far the value 'x' is on the ramp
+                            // subtracts by the starting edge of the ramp on the terrain
+                            float terrainDistOnRamp = x - Mathf.CeilToInt(affectedPoint.z - scaledWidth);
+                            // how long is the terrain from edge to edge
+                            float terrainRampTotalDist = (affectedPoint.z + scaledWidth) - (affectedPoint.z - scaledWidth);
+
                             // sets the new height of the vertice
-                            newHeights[x, y] = affectedPoint.y + (WorldPointToTerrainPoint(Vector3.up*height).y*(x/(affectedPoint.z + (width * ((float)terrainResolution / 100)))));
-                            Debug.Log((x / (affectedPoint.z + (width * ((float)terrainResolution / 100)))));
+                            // multiply addedHeight by fraction to get slope
+                            newHeights[x, y] = affectedPoint.y + (addedHeight * (terrainDistOnRamp / terrainRampTotalDist));
                         }
                     }
                     else if (rampDirection == RampDirectionType.South)
                     {
                         // checks if the vertice is within the affected area
-                        if (VerticeInAffectedArea(x, y, affectedPoint, terrainResolution, width, depth))
+                        if (VerticeInAffectedArea(x, y, affectedPoint, scaledWidth, scaledDepth))
                         {
                             // sets the new height of the vertice
                             newHeights[x, y] = affectedPoint.y;
@@ -151,11 +165,8 @@ public class SelectionArea : MonoBehaviour
         terrain.terrainData.SetHeights(0, 0, newHeights);
     }
 
-    bool VerticeInAffectedArea(int terrainX, int terrainY, Vector3 affectedPoint, int terrainRes, float width, float depth)
+    bool VerticeInAffectedArea(int terrainX, int terrainY, Vector3 affectedPoint, float scaledWidth, float scaledDepth)
     {
-
-        float scaledWidth = width * ((float)terrainRes / 100);
-        float scaledDepth = depth * ((float)terrainRes / 100);
 
         // if the vertice is within the brush's affected area
         if (terrainX <= (affectedPoint.z + scaledWidth)
