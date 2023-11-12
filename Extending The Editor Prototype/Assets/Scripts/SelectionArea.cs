@@ -14,10 +14,10 @@ public enum PlateauType
 }
 public enum RampDirectionType
 {
-    North,
-    West,
-    South,
-    East
+    North,      //0
+    West,       //1
+    South,      //2
+    East        //3
 }
 
 public class SelectionArea : MonoBehaviour
@@ -50,7 +50,7 @@ public class SelectionArea : MonoBehaviour
     public void Start()
     {
         ClearTerrainHeight();
-        ChangeTerrainHeight();
+        IdentifyTerrainBrush();
     }
     void ClearTerrainHeight()
     {
@@ -84,108 +84,82 @@ public class SelectionArea : MonoBehaviour
         return terrainPos;
     }
 
-
-
-    public void ChangeTerrainHeight()
+    public void IdentifyTerrainBrush()
     {
-        int terrainResolution = terrain.terrainData.heightmapResolution;
-        float[,] newHeights = terrain.terrainData.GetHeights(0, 0, terrainResolution, terrainResolution);
+        int terrainRes = terrain.terrainData.heightmapResolution;
 
         Vector3 affectedPoint = WorldPointToTerrainPoint(transform.position);
 
-        float scaledWidth = width * ((float)terrainResolution / 100);
-        float scaledDepth = depth * ((float)terrainResolution / 100);
-        float scaledRadius = radius * ((float)terrainResolution / 100);
+        float scaledWidth = width * ((float)terrainRes / 100);
+        float scaledDepth = depth * ((float)terrainRes / 100);
+        float scaledRadius = radius * ((float)terrainRes / 100);
+
+        if (brushType == BrushType.Plateau)
+        {
+                    
+            if (plateauType == PlateauType.Circular)
+            {
+                ChangeTerrainHeightPlateau(affectedPoint, scaledRadius*2, scaledRadius*2, true);
+            }
+            else if (plateauType == PlateauType.Rectangular)
+            {
+                ChangeTerrainHeightPlateau(affectedPoint, scaledWidth, scaledDepth, false);
+            }
+           
+        }
+        if (brushType == BrushType.Ramp)
+        {
+            // the height to be added to set the new height of the vertice
+            // must convert to terrain values since height on a terrain map is between 0 and 1
+            float addedHeight = WorldPointToTerrainPoint(Vector3.up * height).y;
+
+            ChangeTerrainHeightRamp(affectedPoint, scaledWidth, scaledDepth, rampDirection);
+
+
+        }
+
+        
+    }
+
+
+    public void ChangeTerrainHeightPlateau(Vector3 affectedPoint, float scaledWidth, float scaledDepth, bool isCircle = false)
+    {
+        Debug.Log("heloo!");
+        int terrainRes = terrain.terrainData.heightmapResolution;
+        float[,] newHeights = terrain.terrainData.GetHeights(0, 0, terrainRes, terrainRes);
+
+        // the edge of the brush that's closest to 0 on the terrain's x-axis
+        float minBrushX = Mathf.Ceil(affectedPoint.z - scaledWidth);
+        // the edge of the brush that's furthest from 0 on the terrain's x-axis
+        float maxBrushX = Mathf.Ceil(affectedPoint.z + scaledWidth);
+
+        // the edge of the brush that's closest to 0 on the terrain's y-axis
+        float minBrushY = Mathf.Ceil(affectedPoint.x - scaledDepth);
+        // the edge of the brush that's furthest from 0 on the terrain's y-axis
+        float maxBrushY = Mathf.Ceil(affectedPoint.x + scaledDepth);
 
         // change the height data of each vertice
-        for (int x = 0; x < terrainResolution; x++)
+        for (int x = Mathf.RoundToInt(minBrushX); x < maxBrushX; x++)
         {
-            for (int y = 0; y < terrainResolution; y++)
+            for (int y = Mathf.RoundToInt(minBrushY); y < maxBrushY; y++)
             {
-                if (brushType == BrushType.Plateau)
+                // checks if the vertice is within the affected area
+                if (VerticeInAffectedArea(x, y, affectedPoint, scaledWidth, scaledDepth))
                 {
-                    if (plateauType == PlateauType.Circular)
+                    if (isCircle)
                     {
-                        // checks if the vertice is within the affected area
-                        if (VerticeInAffectedArea(x, y, affectedPoint, scaledRadius, scaledRadius))
-                        {
-                            // if the vertice's distance is within the radius 
-                            if (Vector2.Distance(new Vector2(x, y), new Vector2(affectedPoint.z, affectedPoint.x)) <= (radius * ((float)terrainResolution / 100)))
-                            {
-                                // sets the new height of the vertice
-                                newHeights[x, y] = affectedPoint.y;
-                            }
-                        }
-                    }
-                    else if (plateauType == PlateauType.Rectangular)
-                    {
-                        // checks if the vertice is within the affected area
-                        if (VerticeInAffectedArea(x, y, affectedPoint, scaledWidth, scaledDepth))
+                        float distance = Vector2.Distance(new Vector2(x, y), new Vector2(affectedPoint.z, affectedPoint.x));
+                        // if the vertice's distance is within the radius 
+                        if (distance <= (radius * ((float)terrainRes / 100))*2)
                         {
                             // sets the new height of the vertice
                             newHeights[x, y] = affectedPoint.y;
                         }
                     }
-                }
-                if (brushType == BrushType.Ramp)
-                {
-                    // the height to be added to set the new height of the vertice
-                    // must convert to terrain values since height on a terrain map is between 0 and 1
-                    float addedHeight = WorldPointToTerrainPoint(Vector3.up * height).y;
-
-                    if (rampDirection == RampDirectionType.North || rampDirection == RampDirectionType.South)
+                    else 
                     {
-                        // checks if the vertice is within the affected area
-                        if (VerticeInAffectedArea(x, y, affectedPoint, scaledWidth, scaledDepth))
-                        {
-                            // how far the value 'x' is on the ramp
-                            // subtracts by the starting edge of the ramp on the terrain
-                            float terrainDistOnRamp = x - Mathf.CeilToInt(affectedPoint.z - scaledWidth);
-                            // how long is the terrain from edge to edge
-                            float terrainRampTotalDist = (affectedPoint.z + scaledWidth) - (affectedPoint.z - scaledWidth);
-
-                            if (rampDirection == RampDirectionType.North)
-                            {
-                                // sets the new height of the vertice
-                                // multiply addedHeight by fraction to get slope
-                                newHeights[x, y] = affectedPoint.y + (addedHeight * (terrainDistOnRamp / terrainRampTotalDist));
-                            }
-                            else if (rampDirection == RampDirectionType.South)
-                            {
-                                // sets the new height of the vertice
-                                // multiply addedHeight by fraction to get slope
-                                newHeights[x, y] = affectedPoint.y + (addedHeight * (1-(terrainDistOnRamp / terrainRampTotalDist)));
-                            }
-
-
-
-                        }
-                    }
-                    else if (rampDirection == RampDirectionType.West || rampDirection == RampDirectionType.East)
-                    {
-                        // checks if the vertice is within the affected area
-                        // scaledDepth and scaledWidth are flipped to rotate the ramp
-                        if (VerticeInAffectedArea(x, y, affectedPoint, scaledDepth, scaledWidth))
-                        {
-                            // how far the value 'x' is on the ramp
-                            // subtracts by the starting edge of the ramp on the terrain
-                            float terrainDistOnRamp = y - (affectedPoint.x - (scaledWidth));
-                            // how long is the terrain from edge to edge
-                            float terrainRampTotalDist = (affectedPoint.x + scaledWidth) - (affectedPoint.x - scaledWidth);
-
-                            if (rampDirection == RampDirectionType.East)
-                            {
-                                // sets the new height of the vertice
-                                // multiply addedHeight by fraction to get slope
-                                newHeights[x, y] = affectedPoint.y + (addedHeight * (terrainDistOnRamp / terrainRampTotalDist));
-                            }
-                            else if (rampDirection == RampDirectionType.West)
-                            {
-                                // sets the new height of the vertice
-                                // multiply addedHeight by fraction to get slope
-                                newHeights[x, y] = affectedPoint.y + (addedHeight * (1-(terrainDistOnRamp / terrainRampTotalDist)));
-                            }
-                        }
+                        // sets the new height of the vertice
+                        newHeights[x, y] = affectedPoint.y;
                     }
                 }
             }
@@ -195,9 +169,88 @@ public class SelectionArea : MonoBehaviour
         terrain.terrainData.SetHeights(0, 0, newHeights);
     }
 
+
+    public void ChangeTerrainHeightRamp(Vector3 affectedPoint, float scaledWidth, float scaledDepth, RampDirectionType rampDirection)
+    {
+        //direction is where the ramp is facing
+        // 0 == North, 1 == West, 2 == South, 3 == East
+        if ((int)rampDirection % 2 == 1)
+        {
+            float storeWidth = scaledWidth;
+            scaledWidth = scaledDepth;
+            scaledDepth = storeWidth;
+        }
+
+        int reverseDir = 0;
+        // reverses the direction of the slope if facing West or South
+        if (rampDirection == RampDirectionType.West || rampDirection == RampDirectionType.South)
+        {
+            reverseDir = -1;
+        }
+
+        Debug.Log("heloo2!");
+        int terrainRes = terrain.terrainData.heightmapResolution;
+        float[,] newHeights = terrain.terrainData.GetHeights(0, 0, terrainRes, terrainRes);
+
+        // the edge of the brush that's closest to 0 on the terrain's x-axis
+        float minBrushX = Mathf.Ceil(affectedPoint.z - scaledWidth);
+        // the edge of the brush that's furthest from 0 on the terrain's x-axis
+        float maxBrushX = Mathf.Ceil(affectedPoint.z + scaledWidth);
+
+        // the edge of the brush that's closest to 0 on the terrain's y-axis
+        float minBrushY = Mathf.Ceil(affectedPoint.x - scaledDepth);
+        // the edge of the brush that's furthest from 0 on the terrain's y-axis
+        float maxBrushY = Mathf.Ceil(affectedPoint.x + scaledDepth);
+
+        // change the height data of each vertice
+        for (int x = Mathf.RoundToInt(minBrushX); x < maxBrushX; x++)
+        {
+            for (int y = Mathf.RoundToInt(minBrushY); y < maxBrushY; y++)
+            {
+                // checks if the vertice is within the affected area
+                if (VerticeInAffectedArea(x, y, affectedPoint, scaledWidth, scaledDepth))
+                {
+                    // how far the value 'x' is on the ramp
+                    // subtracts by the starting edge of the ramp on the terrain
+                    float terrainDistOnRamp;
+                    // how long is the terrain from edge to edge
+                    float terrainRampTotalDist;
+
+                    if (rampDirection == RampDirectionType.West || rampDirection == RampDirectionType.East)
+                    {
+                        terrainDistOnRamp = y - minBrushY;
+                        terrainRampTotalDist = maxBrushY - minBrushY;
+                    }
+                    else
+                    {
+                        terrainDistOnRamp = x - minBrushX;
+                        terrainRampTotalDist = maxBrushX - minBrushX;
+                    }
+
+                    // the height to be added to set the new height of the vertice
+                    // must convert to terrain values since height on a terrain map is between 0 and 1
+                    float addedHeight = WorldPointToTerrainPoint(Vector3.up * height).y;
+
+                    // multiply addedHeight by fraction to get slope
+                    // reverseDir will reverse the direction of the slope (low will be high and vice versa) if the direction is South or West
+                    // removes any negative values from reverseDir using Mathf.Abs
+                    float slopedHeight = addedHeight * Mathf.Abs(reverseDir + (terrainDistOnRamp / terrainRampTotalDist));
+
+                    // sets the new height of the vertice
+                    newHeights[x, y] = affectedPoint.y + slopedHeight;
+
+                }
+            }
+        }
+
+        // sets the terrain height to the changed heights
+        terrain.terrainData.SetHeights(0, 0, newHeights);
+    }
+
+
+    
     bool VerticeInAffectedArea(int terrainX, int terrainY, Vector3 affectedPoint, float scaledWidth, float scaledDepth)
     {
-
         // if the vertice is within the brush's affected area
         if (terrainX <= (affectedPoint.z + scaledWidth)
          && terrainX >= (affectedPoint.z - scaledWidth)
