@@ -139,9 +139,9 @@ public class SelectionArea : MonoBehaviour
         float maxBrushY = Mathf.Ceil(affectedPoint.x + scaledDepth);
 
         // change the height data of each vertice
-        for (int x = Mathf.RoundToInt(minBrushX); x < maxBrushX; x++)
+        for (int x = Mathf.Max(Mathf.RoundToInt(minBrushX), 0); x < Mathf.Min(maxBrushX, terrainRes); x++)
         {
-            for (int y = Mathf.RoundToInt(minBrushY); y < maxBrushY; y++)
+            for (int y = Mathf.Max(Mathf.RoundToInt(minBrushY), 0); y < Mathf.Min(maxBrushY, terrainRes); y++)
             {
                 // checks if the vertice is within the affected area
                 if (VerticeInAffectedArea(x, y, affectedPoint, scaledWidth, scaledDepth))
@@ -203,9 +203,9 @@ public class SelectionArea : MonoBehaviour
         float maxBrushY = Mathf.Ceil(affectedPoint.x + scaledDepth);
 
         // change the height data of each vertice
-        for (int x = Mathf.RoundToInt(minBrushX); x < maxBrushX; x++)
+        for (int x = Mathf.Max(Mathf.RoundToInt(minBrushX), 0); x < Mathf.Min(maxBrushX, terrainRes); x++)
         {
-            for (int y = Mathf.RoundToInt(minBrushY); y < maxBrushY; y++)
+            for (int y = Mathf.Max(Mathf.RoundToInt(minBrushY), 0); y < Mathf.Min(maxBrushY, terrainRes); y++)
             {
                 // checks if the vertice is within the affected area
                 if (VerticeInAffectedArea(x, y, affectedPoint, scaledWidth, scaledDepth))
