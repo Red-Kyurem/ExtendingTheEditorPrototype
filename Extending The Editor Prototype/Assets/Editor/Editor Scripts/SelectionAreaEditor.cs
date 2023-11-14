@@ -298,8 +298,9 @@ public class SelectionAreaEditor : Editor
 
                         // sets the offset in the right, forward, and up directions of the vertice
                         newVert += objectTransform.right * vertMagnitude * direction.x;
-                        newVert += objectTransform.up * Mathf.Max(Mathf.Min(vertHeight, 1), 0) * height;
                         newVert += objectTransform.forward * vertMagnitude * direction.z;
+                        // Mathf.Min and Max are used to keep the value between 0 and 1
+                        newVert += objectTransform.up * Mathf.Max(Mathf.Min(vertHeight, 1), 0) * height;
 
                         // adds the vertice to the list
                         bellList.Add(newVert);

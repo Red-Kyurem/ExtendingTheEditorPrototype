@@ -49,20 +49,26 @@ public class SelectionArea : MonoBehaviour
     [HideInInspector]
     public Vector3[] verticeArray;
 
+    // world to terrain units conversion
+    private float terrainScaler;
+    private int terrainRes;
 
     public void Start()
     {
+        int terrainRes = terrain.terrainData.heightmapResolution;
+        terrainScaler = (float)terrainRes / 100;
+
         ClearTerrainHeight();
         IdentifyTerrainBrush();
     }
     void ClearTerrainHeight()
     {
-        int terrainResolution = terrain.terrainData.heightmapResolution;
-        float[,] newHeights = terrain.terrainData.GetHeights(0, 0, terrainResolution, terrainResolution);
+        terrainRes = terrain.terrainData.heightmapResolution;
+        float[,] newHeights = terrain.terrainData.GetHeights(0, 0, terrainRes, terrainRes);
 
-        for (int x = 0; x < terrainResolution; x++)
+        for (int x = 0; x < terrainRes; x++)
         {
-            for (int y = 0; y < terrainResolution; y++)
+            for (int y = 0; y < terrainRes; y++)
             {
                 // sets the height of the vertice to 0 (flat)
                 newHeights[x, y] = 0;
@@ -89,46 +95,45 @@ public class SelectionArea : MonoBehaviour
 
     public void IdentifyTerrainBrush()
     {
-        int terrainRes = terrain.terrainData.heightmapResolution;
+        
 
         Vector3 affectedPoint = WorldPointToTerrainPoint(transform.position);
 
-        float scaledWidth = width * ((float)terrainRes / 100);
-        float scaledDepth = depth * ((float)terrainRes / 100);
-        float scaledRadius = radius * ((float)terrainRes / 100);
+        
+
+        float scaledWidth = width * terrainScaler;
+        float scaledDepth = depth * terrainScaler;
+        float scaledRadius = radius * terrainScaler;
 
         if (brushType == BrushType.Plateau)
         {
                     
             if (plateauType == PlateauType.Circular)
             {
-                ChangeTerrainHeightPlateau(affectedPoint, scaledRadius*2, scaledRadius*2, true);
+                // height and animation curves are not used
+                ChangeTerrainHeightPlateauOrBell(affectedPoint, scaledRadius*2, scaledRadius*2, 0, new AnimationCurve(), true);
             }
             else if (plateauType == PlateauType.Rectangular)
             {
-                ChangeTerrainHeightPlateau(affectedPoint, scaledWidth, scaledDepth, false);
+                // height and animation curves are not used
+                ChangeTerrainHeightPlateauOrBell(affectedPoint, scaledWidth, scaledDepth, 0, new AnimationCurve(), false);
             }
            
         }
-        if (brushType == BrushType.Ramp)
+        else if (brushType == BrushType.Ramp)
         {
-            // the height to be added to set the new height of the vertice
-            // must convert to terrain values since height on a terrain map is between 0 and 1
-            float addedHeight = WorldPointToTerrainPoint(Vector3.up * height).y;
-
-            ChangeTerrainHeightRamp(affectedPoint, scaledWidth, scaledDepth, rampDirection);
-
-
+            ChangeTerrainHeightRamp(affectedPoint, scaledWidth, scaledDepth, height, rampDirection);
         }
-
-        
+        else if (brushType == BrushType.Bell)
+        {
+            ChangeTerrainHeightPlateauOrBell(affectedPoint, scaledRadius * 2, scaledRadius * 2, height, bellCurve, true);
+        }
     }
 
-
-    public void ChangeTerrainHeightPlateau(Vector3 affectedPoint, float scaledWidth, float scaledDepth, bool isCircle = false)
+    // 
+    public void ChangeTerrainHeightPlateauOrBell(Vector3 affectedPoint, float scaledWidth, float scaledDepth, float height, AnimationCurve animCurve, bool isCircle = false)
     {
-        Debug.Log("heloo!");
-        int terrainRes = terrain.terrainData.heightmapResolution;
+        terrainRes = terrain.terrainData.heightmapResolution;
         float[,] newHeights = terrain.terrainData.GetHeights(0, 0, terrainRes, terrainRes);
 
         // the edge of the brush that's closest to 0 on the terrain's x-axis
@@ -153,10 +158,13 @@ public class SelectionArea : MonoBehaviour
                     {
                         float distance = Vector2.Distance(new Vector2(x, y), new Vector2(affectedPoint.z, affectedPoint.x));
                         // if the vertice's distance is within the radius 
-                        if (distance <= (radius * ((float)terrainRes / 100))*2)
+                        if (distance <= radius * terrainScaler * 2)
                         {
+                            // adds extra height to the vertice's new height using the animation curve
+                            // Mathf.Min and Max are used to keep the value between 0 and 1
+                            float extraHeight = Mathf.Max(Mathf.Min(animCurve.Evaluate(distance / (radius * terrainScaler * 2)), 1), 0) / 10;
                             // sets the new height of the vertice
-                            newHeights[x, y] = affectedPoint.y;
+                            newHeights[x, y] = affectedPoint.y + extraHeight;
                         }
                     }
                     else 
@@ -173,7 +181,7 @@ public class SelectionArea : MonoBehaviour
     }
 
 
-    public void ChangeTerrainHeightRamp(Vector3 affectedPoint, float scaledWidth, float scaledDepth, RampDirectionType rampDirection)
+    public void ChangeTerrainHeightRamp(Vector3 affectedPoint, float scaledWidth, float scaledDepth, float height, RampDirectionType rampDirection)
     {
         //direction is where the ramp is facing
         // 0 == North, 1 == West, 2 == South, 3 == East
@@ -191,8 +199,7 @@ public class SelectionArea : MonoBehaviour
             reverseDir = -1;
         }
 
-        Debug.Log("heloo2!");
-        int terrainRes = terrain.terrainData.heightmapResolution;
+        terrainRes = terrain.terrainData.heightmapResolution;
         float[,] newHeights = terrain.terrainData.GetHeights(0, 0, terrainRes, terrainRes);
 
         // the edge of the brush that's closest to 0 on the terrain's x-axis
@@ -251,7 +258,8 @@ public class SelectionArea : MonoBehaviour
     }
 
 
-    
+
+
     bool VerticeInAffectedArea(int terrainX, int terrainY, Vector3 affectedPoint, float scaledWidth, float scaledDepth)
     {
         // if the vertice is within the brush's affected area
