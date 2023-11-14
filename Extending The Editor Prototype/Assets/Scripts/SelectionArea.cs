@@ -5,7 +5,8 @@ using UnityEngine;
 public enum BrushType
 {
     Plateau,
-    Ramp
+    Ramp,
+    Bell
 }
 public enum PlateauType
 {
@@ -40,6 +41,8 @@ public class SelectionArea : MonoBehaviour
     public float height = 1;
     [HideInInspector]
     public float depth = 1;
+    [HideInInspector]
+    public AnimationCurve bellCurve;
 
     [HideInInspector]
     public Vector3[] gizmoArray;
