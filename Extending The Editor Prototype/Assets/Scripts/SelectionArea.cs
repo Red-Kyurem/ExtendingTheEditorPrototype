@@ -58,7 +58,6 @@ public class SelectionArea : MonoBehaviour
         int terrainRes = terrain.terrainData.heightmapResolution;
         terrainScaler = (float)terrainRes / 100;
 
-        ClearTerrainHeight();
         IdentifyTerrainBrush();
     }
     void ClearTerrainHeight()
