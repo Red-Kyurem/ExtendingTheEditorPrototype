@@ -26,6 +26,8 @@ public class SelectionAreaEditor : Editor
     private int bellCurveDetail = 10;
     private int bellCurves = 4;
 
+    private int index = 0;
+
     private void OnEnable()
     {
         areaTarget = (SelectionArea)target;
@@ -120,6 +122,9 @@ public class SelectionAreaEditor : Editor
             areaTarget.gizmoArray = CreateBellArray(radius, height, curveKeyPos);
         }
 
+        index = areaTarget.index;
+        index = EditorGUILayout.IntField("Index", index);
+
         // checks if any GUI elements have changed since EditorGUI.BeginChangeCheck()
         if (EditorGUI.EndChangeCheck())
         {
@@ -141,6 +146,7 @@ public class SelectionAreaEditor : Editor
         areaTarget.width = width;
         areaTarget.height = height;
         areaTarget.depth = depth;
+        areaTarget.index = index;
     }
 
     // creates an array for an outline of a circle

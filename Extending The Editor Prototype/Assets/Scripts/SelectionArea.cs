@@ -49,17 +49,30 @@ public class SelectionArea : MonoBehaviour
     [HideInInspector]
     public Vector3[] verticeArray;
 
+    [HideInInspector]
+    public int index = 0;
+
     // world to terrain units conversion
     private float terrainScaler;
     private int terrainRes;
 
     public void Start()
     {
+        BrushOrderController.AddBrushToList(this);
+    }
+
+    // called by BrushOrderController.cs
+    public void StartBrush()
+    {
         int terrainRes = terrain.terrainData.heightmapResolution;
         terrainScaler = (float)terrainRes / 100;
 
         IdentifyTerrainBrush();
+
+        // runs the next brush in the cue in BrushOrderController.cs
+        BrushOrderController.RunNextBrush();
     }
+
     void ClearTerrainHeight()
     {
         terrainRes = terrain.terrainData.heightmapResolution;
