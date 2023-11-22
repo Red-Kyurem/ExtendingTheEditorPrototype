@@ -49,7 +49,7 @@ public class SelectionAreaEditor : Editor
 
         // creates and renders the selection type enum in the inspector and sets the type to what was selected
         brushType = areaTarget.brushType;
-        brushType = (BrushType)EditorGUILayout.EnumPopup("Selection Type", brushType);
+        brushType = (BrushType)EditorGUILayout.EnumPopup("Brush Type", brushType);
         if (brushType == BrushType.Plateau)
         {
 
