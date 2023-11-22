@@ -64,10 +64,19 @@ public class SelectionArea : MonoBehaviour
     // called by BrushOrderController.cs
     public void StartBrush()
     {
-        int terrainRes = terrain.terrainData.heightmapResolution;
-        terrainScaler = (float)terrainRes / 100;
+        // attempts to get the terrain data to set the terrain resolution
+        // if it fails due to the terrain field being empty, it will be caught and logged as a warning in the console
+        try
+        {
+            int terrainRes = terrain.terrainData.heightmapResolution;
+            terrainScaler = (float)terrainRes / 100;
 
-        IdentifyTerrainBrush();
+            IdentifyTerrainBrush();
+        }
+        catch 
+        {
+            Debug.LogWarningFormat("The Terrain field on object \'"+ name + "\' has not been filled in. This brush will not modify any terrain until a terrain to modify has been selected.");
+        }
 
         // runs the next brush in the cue in BrushOrderController.cs
         BrushOrderController.RunNextBrush();

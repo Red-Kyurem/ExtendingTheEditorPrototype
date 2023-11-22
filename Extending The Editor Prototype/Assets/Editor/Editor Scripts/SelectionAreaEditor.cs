@@ -41,6 +41,12 @@ public class SelectionAreaEditor : Editor
         // remembers any GUI element changes for checking if any variables were changed
         EditorGUI.BeginChangeCheck();
 
+        // if the terrain field is empty in the non-editor script, display a warning message
+        if (areaTarget.terrain == null)
+        { 
+            EditorGUILayout.HelpBox("The Terrain field must be filled in, otherwise this brush will not modify any terrain.", MessageType.Warning); 
+        }
+
         // creates and renders the selection type enum in the inspector and sets the type to what was selected
         brushType = areaTarget.brushType;
         brushType = (BrushType)EditorGUILayout.EnumPopup("Selection Type", brushType);
