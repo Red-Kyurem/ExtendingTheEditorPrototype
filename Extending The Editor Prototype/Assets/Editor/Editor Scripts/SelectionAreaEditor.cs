@@ -26,6 +26,8 @@ public class SelectionAreaEditor : Editor
     private int bellCurveDetail = 10;
     private int bellCurves = 4;
 
+    private int index = 0;
+
     private void OnEnable()
     {
         areaTarget = (SelectionArea)target;
@@ -38,6 +40,12 @@ public class SelectionAreaEditor : Editor
 
         // remembers any GUI element changes for checking if any variables were changed
         EditorGUI.BeginChangeCheck();
+
+        // if the terrain field is empty in the non-editor script, display a warning message
+        if (areaTarget.terrain == null)
+        { 
+            EditorGUILayout.HelpBox("The Terrain field must be filled in, otherwise this brush will not modify any terrain.", MessageType.Warning); 
+        }
 
         // creates and renders the selection type enum in the inspector and sets the type to what was selected
         brushType = areaTarget.brushType;
@@ -120,6 +128,9 @@ public class SelectionAreaEditor : Editor
             areaTarget.gizmoArray = CreateBellArray(radius, height, curveKeyPos);
         }
 
+        index = areaTarget.index;
+        index = EditorGUILayout.IntField("Index", index);
+
         // checks if any GUI elements have changed since EditorGUI.BeginChangeCheck()
         if (EditorGUI.EndChangeCheck())
         {
@@ -141,6 +152,7 @@ public class SelectionAreaEditor : Editor
         areaTarget.width = width;
         areaTarget.height = height;
         areaTarget.depth = depth;
+        areaTarget.index = index;
     }
 
     // creates an array for an outline of a circle

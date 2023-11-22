@@ -1,0 +1,126 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1714274118960720041
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6256814277452185800}
+  - component: {fileID: 3762650105188938138}
+  m_Layer: 0
+  m_Name: Brush
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6256814277452185800
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1714274118960720041}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 51.46, y: 10.07, z: 77.2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3762650105188938138
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1714274118960720041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ecd9676120c3db4294fc195da2e4a42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  terrain: {fileID: 0}
+  brushType: 0
+  plateauType: 1
+  rampDirection: 0
+  radius: 5
+  width: 4.3
+  height: 0
+  depth: 5.1
+  bellCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0.0086627
+      outSlope: 0.0086627
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 1
+      outWeight: 0.7109088
+    - serializedVersion: 3
+      time: 0.3512771
+      value: 0.8969019
+      inSlope: -0.8191596
+      outSlope: -0.8191596
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.21880336
+      outWeight: 0.4441075
+    - serializedVersion: 3
+      time: 0.55348825
+      value: 0.65142214
+      inSlope: -1.9985033
+      outSlope: -1.9985033
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.41196883
+      outWeight: 0.39799768
+    - serializedVersion: 3
+      time: 0.6979985
+      value: 0.20025635
+      inSlope: -1.9115207
+      outSlope: -1.9115207
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.30768192
+      outWeight: 0.19058532
+    - serializedVersion: 3
+      time: 0.9953308
+      value: 0
+      inSlope: -0.006209463
+      outSlope: -0.006209463
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 1
+      outWeight: 0.26030067
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  gizmoArray:
+  - {x: 56.559998, y: 10.07, z: 81.5}
+  - {x: 46.36, y: 10.07, z: 81.5}
+  - {x: 46.36, y: 10.07, z: 81.5}
+  - {x: 46.36, y: 10.07, z: 72.899994}
+  - {x: 46.36, y: 10.07, z: 72.899994}
+  - {x: 56.559998, y: 10.07, z: 72.899994}
+  - {x: 56.559998, y: 10.07, z: 72.899994}
+  - {x: 56.559998, y: 10.07, z: 81.5}
+  - {x: 56.559998, y: 10.07, z: 81.5}
+  - {x: 56.559998, y: 10.07, z: 81.5}
+  verticeArray:
+  - {x: 56.559998, y: 10.07, z: 81.5}
+  - {x: 46.36, y: 10.07, z: 81.5}
+  - {x: 46.36, y: 10.07, z: 81.5}
+  - {x: 46.36, y: 10.07, z: 72.899994}
+  - {x: 46.36, y: 10.07, z: 72.899994}
+  - {x: 56.559998, y: 10.07, z: 72.899994}
+  - {x: 56.559998, y: 10.07, z: 72.899994}
+  - {x: 56.559998, y: 10.07, z: 81.5}
+  index: 4
