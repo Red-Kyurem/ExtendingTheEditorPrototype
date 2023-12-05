@@ -2,6 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// SelectionArea.cs is responsible for
+// - modifying the height of the terrain within an area
+// - storing the variables changed from the editor script
+
+// note: this script cannot communicate with its Editor script, as any references to an editor script will break projects once built
+
 public enum BrushType
 {
     Plateau,
@@ -25,6 +31,8 @@ public class SelectionArea : MonoBehaviour
 {
     [SerializeField]
     public Terrain terrain;
+
+    // most variables are public yet hidden in the inspector as the Editor script is responsible for displaying the relavent variables for the selected brush type
 
     [HideInInspector]
     public BrushType brushType;
@@ -126,28 +134,33 @@ public class SelectionArea : MonoBehaviour
         float scaledDepth = depth * terrainScaler;
         float scaledRadius = radius * terrainScaler;
 
-        if (brushType == BrushType.Plateau)
+        switch (brushType)
         {
-                    
-            if (plateauType == PlateauType.Circular)
-            {
-                // height and animation curves are not used
-                ChangeTerrainHeightPlateauOrBell(affectedPoint, scaledRadius*2, scaledRadius*2, 0, new AnimationCurve(), true);
-            }
-            else if (plateauType == PlateauType.Rectangular)
-            {
-                // height and animation curves are not used
-                ChangeTerrainHeightPlateauOrBell(affectedPoint, scaledWidth, scaledDepth, 0, new AnimationCurve(), false);
-            }
-           
-        }
-        else if (brushType == BrushType.Ramp)
-        {
-            ChangeTerrainHeightRamp(affectedPoint, scaledWidth, scaledDepth, height, rampDirection);
-        }
-        else if (brushType == BrushType.Bell)
-        {
-            ChangeTerrainHeightPlateauOrBell(affectedPoint, scaledRadius * 2, scaledRadius * 2, height, bellCurve, true);
+            case BrushType.Plateau:
+                switch (plateauType)
+                {
+                    case PlateauType.Circular:
+                        // height and animation curves are not used
+                        ChangeTerrainHeightPlateauOrBell(affectedPoint, scaledRadius * 2, scaledRadius * 2, 0, new AnimationCurve(), true);
+                        break;
+
+
+                    case PlateauType.Rectangular:
+                        // height and animation curves are not used
+                        ChangeTerrainHeightPlateauOrBell(affectedPoint, scaledWidth, scaledDepth, 0, new AnimationCurve(), false);
+                        break;
+                }
+                break;
+
+
+            case BrushType.Ramp:
+                ChangeTerrainHeightRamp(affectedPoint, scaledWidth, scaledDepth, height, rampDirection);
+                break;
+
+
+            case BrushType.Bell:
+                ChangeTerrainHeightPlateauOrBell(affectedPoint, scaledRadius * 2, scaledRadius * 2, height, bellCurve, true);
+                break;
         }
     }
 

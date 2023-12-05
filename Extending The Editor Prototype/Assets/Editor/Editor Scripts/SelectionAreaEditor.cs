@@ -3,7 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
+// the SelectionAreaEditor.cs script is responsible for:
+// - showing/hiding variables based on the selected brush type
+// - relaying changed variables to SelectionArea.cs
+// - displaying the gizmo outline of the area of terrain that will have its height modified
 
+// note: scripts derived from an editor class will not be built into the final game
+// due to this, this script can only send and check variables from the non-editor script
 
 [CustomEditor(typeof(SelectionArea))]
 [CanEditMultipleObjects]
@@ -50,24 +56,45 @@ public class SelectionAreaEditor : Editor
         // creates and renders the selection type enum in the inspector and sets the type to what was selected
         brushType = areaTarget.brushType;
         brushType = (BrushType)EditorGUILayout.EnumPopup("Brush Type", brushType);
-        if (brushType == BrushType.Plateau)
+
+        switch (brushType)
         {
+            case BrushType.Plateau:
+                // creates and renders the plateau type enum in the inspector and sets the type to what was selected
+                plateauType = areaTarget.plateauType;
+                plateauType = (PlateauType)EditorGUILayout.EnumPopup("Plateau Type", plateauType);
 
-            // creates and renders the plateau type enum in the inspector and sets the type to what was selected
-            plateauType = areaTarget.plateauType;
-            plateauType = (PlateauType)EditorGUILayout.EnumPopup("Plateau Type", plateauType);
+                switch (plateauType)
+                {
+                    case PlateauType.Circular:
+                        // creates and renders the radius slider in the inspector and sets it to what was selected
+                        radius = areaTarget.radius;
+                        radius = EditorGUILayout.Slider("Radius", radius, 0.1f, 10);
 
-            if (plateauType == PlateauType.Circular)
-            {
-                // creates and renders the radius slider in the inspector and sets it to what was selected
-                radius = areaTarget.radius;
-                radius = EditorGUILayout.Slider("Radius", radius, 0.1f, 10);
+                        areaTarget.gizmoArray = CreateCircleArray(radius, 0);
+                        break;
 
-                areaTarget.gizmoArray = CreateCircleArray(radius, 0);
 
-            }
-            if (plateauType == PlateauType.Rectangular)
-            {
+                    case PlateauType.Rectangular:
+                        // creates and renders the width slider in the inspector and sets it to what was selected
+                        width = areaTarget.width;
+                        width = EditorGUILayout.Slider("Width", width, 0.1f, 20);
+
+                        // creates and renders the depth slider in the inspector and sets it to what was selected
+                        depth = areaTarget.depth;
+                        depth = EditorGUILayout.Slider("Depth", depth, 0.1f, 20);
+
+                        areaTarget.gizmoArray = CreateRectArray(width, depth);
+                        break;
+                }
+                break;
+
+
+            case BrushType.Ramp:
+                // creates and renders the ramp direction type enum in the inspector and sets the type to what was selected
+                rampDirection = areaTarget.rampDirection;
+                rampDirection = (RampDirectionType)EditorGUILayout.EnumPopup("Ramp Direction", rampDirection);
+
                 // creates and renders the width slider in the inspector and sets it to what was selected
                 width = areaTarget.width;
                 width = EditorGUILayout.Slider("Width", width, 0.1f, 20);
@@ -76,57 +103,42 @@ public class SelectionAreaEditor : Editor
                 depth = areaTarget.depth;
                 depth = EditorGUILayout.Slider("Depth", depth, 0.1f, 20);
 
-                areaTarget.gizmoArray = CreateRectArray(width, depth);
-            }
+                // creates and renders the height slider in the inspector and sets it to what was selected
+                height = areaTarget.height;
+                height = EditorGUILayout.Slider("Height", height, 0.1f, 20);
+
+                areaTarget.gizmoArray = CreateRampArray(width, depth, (int)rampDirection);
+                break;
+
+
+            case BrushType.Bell:
+                // creates and renders the radius slider in the inspector and sets it to what was selected
+                radius = areaTarget.radius;
+                radius = EditorGUILayout.Slider("Radius", radius, 0.1f, 10);
+
+                // creates and renders the height slider in the inspector and sets it to what was selected
+                height = areaTarget.height;
+                height = EditorGUILayout.Slider("Height", height, 0.1f, 20);
+
+                // creates and renders the Animation Curve editor in the inspector and sets it to what was selected
+                bellCurve = areaTarget.bellCurve;
+                bellCurve = EditorGUILayout.CurveField("Bell Curve", bellCurve, Color.green, ranges: new Rect(0, 0, 1, 1));
+
+                // creates and renders the bellCurveDetail float as a slider in the inspector
+                bellCurveDetail = Mathf.RoundToInt(EditorGUILayout.Slider("Bell Curve Detail", bellCurveDetail, 3, 20));
+
+                // creates and renders the bellCurves float as a slider in the inspector
+                bellCurves = Mathf.RoundToInt(EditorGUILayout.Slider("Bell Curves", bellCurves, 3, 8));
+
+                // finds all curve keys present in the animation curve and returns a Vector2
+                // x is the time of when the key is located (0 to 1)
+                // y is the value of the key (0 to 1)
+                Vector2[] curveKeyPos = FindAnimCurveKeyPositions(bellCurve);
+
+                areaTarget.gizmoArray = CreateBellArray(radius, height, curveKeyPos);
+                break;
         }
-        else if (brushType == BrushType.Ramp)
-        {
-            // creates and renders the ramp direction type enum in the inspector and sets the type to what was selected
-            rampDirection = areaTarget.rampDirection;
-            rampDirection = (RampDirectionType)EditorGUILayout.EnumPopup("Ramp Direction", rampDirection);
 
-            // creates and renders the width slider in the inspector and sets it to what was selected
-            width = areaTarget.width;
-            width = EditorGUILayout.Slider("Width", width, 0.1f, 20);
-
-            // creates and renders the depth slider in the inspector and sets it to what was selected
-            depth = areaTarget.depth;
-            depth = EditorGUILayout.Slider("Depth", depth, 0.1f, 20);
-
-            // creates and renders the height slider in the inspector and sets it to what was selected
-            height = areaTarget.height;
-            height = EditorGUILayout.Slider("Height", height, 0.1f, 20);
-
-            areaTarget.gizmoArray = CreateRampArray(width, depth, (int)rampDirection);
-        }
-        else if (brushType == BrushType.Bell)
-        {
-            // creates and renders the radius slider in the inspector and sets it to what was selected
-            radius = areaTarget.radius;
-            radius = EditorGUILayout.Slider("Radius", radius, 0.1f, 10);
-
-            // creates and renders the height slider in the inspector and sets it to what was selected
-            height = areaTarget.height;
-            height = EditorGUILayout.Slider("Height", height, 0.1f, 20);
-
-
-            // creates and renders the Animation Curve editor in the inspector and sets it to what was selected
-            bellCurve = areaTarget.bellCurve;
-            bellCurve = EditorGUILayout.CurveField("Bell Curve", bellCurve, Color.green, ranges: new Rect(0, 0, 1, 1));
-
-            // creates and renders the bellCurveDetail float as a slider in the inspector
-            bellCurveDetail = Mathf.RoundToInt(EditorGUILayout.Slider("Bell Curve Detail", bellCurveDetail, 3, 20));
-
-            // creates and renders the bellCurves float as a slider in the inspector
-            bellCurves = Mathf.RoundToInt(EditorGUILayout.Slider("Bell Curves", bellCurves, 3, 8));
-
-            // finds all curve keys present in the animation curve and returns a Vector2
-            // x is the time of when the key is located (0 to 1)
-            // y is the value of the key (0 to 1)
-            Vector2[] curveKeyPos = FindAnimCurveKeyPositions(bellCurve);
-
-            areaTarget.gizmoArray = CreateBellArray(radius, height, curveKeyPos);
-        }
 
         index = areaTarget.index;
         index = EditorGUILayout.IntField("Index", index);
@@ -333,20 +345,24 @@ public class SelectionAreaEditor : Editor
     }
 
     // creates a closed loop array of vertices
-    public Vector3[] CreateClosedVerticeArray(Transform objectTransform, int detail, float depth, float width, float height, float degreeRotation)
+    public Vector3[] CreateClosedVerticeArray(Transform objectTransform, int detail, float depth, float width, float height, float rotationOffset)
     {
         List<Vector3> vertList = new List<Vector3>();
 
         // create vertices and add to rectList
-        for (int vertNum = 0; vertNum < detail; vertNum++)
+        for (int currentVertNum = 0; currentVertNum < detail; currentVertNum++)
         {
-            for (int pairPartner = 0; pairPartner < 2; pairPartner++)
+            // two verts are needed to create a line, 
+            for (int vertPartner = 0; vertPartner < 2; vertPartner++)
             {
                 Vector3 newVert = objectTransform.position;
 
                 // sets the offset in the right, forward, and up directions of the vertice
-                newVert += objectTransform.right * Mathf.Cos(Mathf.Deg2Rad * (360 / detail * (vertNum + pairPartner) + degreeRotation)) * depth;
-                newVert += objectTransform.forward * Mathf.Sin(Mathf.Deg2Rad * (360 / detail * (vertNum + pairPartner) + degreeRotation)) * width;
+                // divides 360 by detail to get how far apart each vertice should be positioned to create the circle 
+                // vertPartner offsets the current vertice that's being created for the gizmo's line during the second loop (2 verts are needed to create a line), creating a partner for the first vert
+                // rotationOffset adds an offset in degrees to the roatation of the circle. is used when creating the ramp's base by rotating 45 degrees
+                newVert += objectTransform.right * Mathf.Cos(Mathf.Deg2Rad * ((360 / detail) * (currentVertNum + vertPartner) + rotationOffset)) * depth;
+                newVert += objectTransform.forward * Mathf.Sin(Mathf.Deg2Rad * ((360 / detail) * (currentVertNum + vertPartner) + rotationOffset)) * width;
                 newVert += objectTransform.up * height;
 
                 // adds vertice to list
