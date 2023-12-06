@@ -85,7 +85,7 @@ public class SelectionArea : MonoBehaviour
         // if it fails due to the terrain field being empty, it will be caught and logged as a warning in the console
         try
         {
-            int terrainRes = terrain.terrainData.heightmapResolution;
+            terrainRes = terrain.terrainData.heightmapResolution;
             terrainScaler = (float)terrainRes / 100;
 
             IdentifyTerrainBrush();
@@ -101,7 +101,6 @@ public class SelectionArea : MonoBehaviour
 
     void ClearTerrainHeight()
     {
-        terrainRes = terrain.terrainData.heightmapResolution;
         float[,] newHeights = terrain.terrainData.GetHeights(0, 0, terrainRes, terrainRes);
 
         for (int x = 0; x < terrainRes; x++)
@@ -122,8 +121,8 @@ public class SelectionArea : MonoBehaviour
         Vector3 relativePos = worldPos - terrain.transform.position;
         // sets relativePos values to be between 0 and 1
         Vector3 relativePos01 = new Vector3(relativePos.x / terrain.terrainData.size.x, relativePos.y / terrain.terrainData.size.y, relativePos.z / terrain.terrainData.size.z);
-        // multiplies by the heightmapResolution to get where the world position is on the terrain
-        Vector3 terrainPos = relativePos01 * terrain.terrainData.heightmapResolution;
+        // multiplies by the terrainRes to get where the world position is on the terrain
+        Vector3 terrainPos = relativePos01 * terrainRes;
 
         // terrainPos.y would be unused, so its storing how high the selection is compared to the floor (0) and the maximum terrain height (1)
         terrainPos.y = relativePos01.y;
@@ -190,7 +189,6 @@ public class SelectionArea : MonoBehaviour
     // 
     public void ModifyHeightsCircleBase(BrushData brushData, AnimationCurve animCurve, bool isCircle = false)
     {
-        terrainRes = terrain.terrainData.heightmapResolution;
         float[,] newHeights = terrain.terrainData.GetHeights(0, 0, terrainRes, terrainRes);
 
         // the edge of the brush that's closest to 0 on the terrain's x-axis
@@ -265,7 +263,6 @@ public class SelectionArea : MonoBehaviour
             reverseDir = -1;
         }
 
-        terrainRes = terrain.terrainData.heightmapResolution;
         float[,] newHeights = terrain.terrainData.GetHeights(0, 0, terrainRes, terrainRes);
 
         // the edge of the brush that's closest to 0 on the terrain's x-axis
